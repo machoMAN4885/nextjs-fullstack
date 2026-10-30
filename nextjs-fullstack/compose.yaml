@@ -1,0 +1,46 @@
+name: ${COMPOSE_PROJECT_NAME:-sdd-nextjs}
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sdd
+      POSTGRES_PASSWORD: local-only-password
+      POSTGRES_DB: sdd
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-55432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sdd -d sdd"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+
+  tools:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    init: true
+    working_dir: /workspace/apps/web
+    environment:
+      # apps/web/.env에 Neon 주소가 있어도 로컬 작업은 이 DB 연결 값을 사용한다.
+      DATABASE_URL: postgresql://sdd:local-only-password@db:5432/sdd
+      DIRECT_URL: postgresql://sdd:local-only-password@db:5432/sdd
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+      - "127.0.0.1:${STUDIO_PORT:-5555}:5555"
+    volumes:
+      - .:/workspace
+      - node_modules:/workspace/apps/web/node_modules
+      - next_cache:/workspace/apps/web/.next
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  node_modules:
+  next_cache:

@@ -1,0 +1,12 @@
+FROM node:24-bookworm-slim
+
+# Prisma 실행에 필요한 OpenSSL과 인증서를 포함한다.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /workspace/apps/web
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# 개발 소스가 없어도 작업 환경을 띄운다. 명령은 docker compose exec로 실행한다.
+CMD ["sleep", "infinity"]

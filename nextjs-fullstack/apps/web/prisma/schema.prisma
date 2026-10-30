@@ -1,0 +1,9 @@
+// 제품 모델은 스펙을 정한 뒤 추가한다. 원본의 모델·마이그레이션은 포함하지 않는다.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
